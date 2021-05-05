@@ -22,6 +22,7 @@ from allauth_2fa.forms import (TOTPAuthenticateForm, TOTPDeviceForm,
 from allauth_2fa.mixins import ValidTOTPDeviceRequiredMixin
 from allauth_2fa.utils import generate_totp_config_svg_for_device, user_has_valid_totp_device
 
+from base64 import b32encode
 
 class TwoFactorAuthenticate(FormView):
     template_name = 'allauth_2fa/authenticate.' + app_settings.TEMPLATE_EXTENSION
@@ -111,9 +112,14 @@ class TwoFactorSetup(LoginRequiredMixin, FormView):
         svg_data = generate_totp_config_svg_for_device(self.request, self.device)
         return 'data:image/svg+xml;base64,%s' % force_text(b64encode(svg_data))
 
+    def get_qr_code_secret(self):
+        secret = b32encode(self.device.bin_key).decode('utf-8')
+        return secret
+      
     def get_context_data(self, **kwargs):
         context = super(TwoFactorSetup, self).get_context_data(**kwargs)
         context['qr_code_url'] = self.get_qr_code_data_uri()
+        context['secret'] = self.get_qr_code_secret()
         return context
 
     def get_form_kwargs(self):
