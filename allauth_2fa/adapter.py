@@ -37,4 +37,7 @@ class OTPAdapter(DefaultAccountAdapter):
             )
 
         # Otherwise defer to the original allauth adapter.
+        self.login_without_otp(request, user)
+
+    def login_without_otp(self, request, user):
         return super(OTPAdapter, self).login(request, user)
